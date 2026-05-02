@@ -89,7 +89,7 @@ function App() {
             <div className="hero">
               <h1>Shop Desi.<br/>Feel Global.</h1>
               <p>Discover unique handmade products from rural India.</p>
-              <Link to="/shop"><button className="btn-glow">Explore Now ✨</button></Link>
+              <Link to="/shop"><button className="btn-glow">Explore Now 🛍️</button></Link>
             </div>
           </div>
         } />
@@ -236,7 +236,7 @@ function Signup({ setUser }) {
   return (
     <div className="section active" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
       <div className="card glass" style={{width: '400px', padding: '40px'}}>
-        <h2 style={{color: 'white', marginBottom: '20px', textAlign: 'center'}}>Join E-Haat ✨</h2>
+        <h2 style={{color: 'white', marginBottom: '20px', textAlign: 'center'}}>Join Gramin E-Haat 🛍️</h2>
         <form onSubmit={handleSignup} style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
           <input type="text" placeholder="Full Name" onChange={e => setFormData({...formData, name: e.target.value})} style={{padding: '12px', borderRadius: '10px', border: 'none'}} required />
           <input type="email" placeholder="Email" onChange={e => setFormData({...formData, email: e.target.value})} style={{padding: '12px', borderRadius: '10px', border: 'none'}} required />
