@@ -5,15 +5,34 @@ import './index.css';
 
 function App() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const categories = ['All', 'Pottery', 'Handloom', 'Jewelry', 'Art & Paintings', 'Decor'];
 
   useEffect(() => {
-    fetchProducts().then(setProducts).catch(console.error);
+    fetchProducts().then(data => {
+      setProducts(data);
+      setFilteredProducts(data);
+    }).catch(console.error);
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+
+  useEffect(() => {
+    let filtered = products;
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    setFilteredProducts(filtered);
+  }, [searchQuery, selectedCategory, products]);
 
   const addToCart = (product) => {
     setCart([...cart, product]);
@@ -45,8 +64,8 @@ function App() {
 
       {isCartOpen && <div id="overlay" style={{display: 'block'}} onClick={() => setIsCartOpen(false)}></div>}
 
-      <div className="navbar glass">
-        <div className="logo"><Link to="/" style={{color: 'inherit', textDecoration: 'none'}}>✨ E-Haat</Link></div>
+      <div className="navbar glass bold-nav">
+        <div className="logo"><Link to="/" style={{color: 'inherit', textDecoration: 'none'}}>🌾 Gramin E-Haat</Link></div>
         <div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/shop">Shop</Link>
@@ -77,9 +96,36 @@ function App() {
         
         <Route path="/shop" element={
           <div className="section active">
-            <h2 className="section-title">Fresh Drops 🔥</h2>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', marginBottom: '40px'}}>
+              <h2 className="section-title" style={{marginBottom: 0}}>Shop Authentic Products 🔥</h2>
+              
+              <div className="search-container glass" style={{display: 'flex', width: '100%', maxWidth: '600px', padding: '10px', borderRadius: '50px'}}>
+                <span style={{padding: '10px 15px', fontSize: '1.2rem'}}>🔍</span>
+                <input 
+                  type="text" 
+                  placeholder="Search Amazon, Flipkart & Local Sellers..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{flex: 1, background: 'transparent', border: 'none', color: 'white', outline: 'none', fontSize: '1.1rem'}}
+                />
+              </div>
+
+              <div className="categories-bar" style={{display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center'}}>
+                {categories.map(cat => (
+                  <button 
+                    key={cat} 
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`btn-glow ${selectedCategory === cat ? 'active-cat' : ''}`}
+                    style={{padding: '8px 20px', borderRadius: '30px', fontSize: '0.9rem', opacity: selectedCategory === cat ? 1 : 0.7}}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="grid">
-              {products.map(product => (
+              {filteredProducts.map(product => (
                 <div key={product.id} className="card glass">
                   <button className="wishlist-btn">🤍</button>
                   <div className="card-img-wrapper">
