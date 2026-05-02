@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Gramin E-Haat</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Welcome Back 👋</h2>
+  <form onsubmit="login(event)">
+  <input type="email" id="email" placeholder="Enter Email" required>
+  <input type="password" id="password" placeholder="Enter Password" required>
+  <button type="submit">Login</button>
+  <p id="error" style="color:red;"></p>
+  <p>Don't have an account? <a href="signup.html">Signup</a></p>
+</form>
+</div>
+<script>
+function login(e){
+  e.preventDefault();
+
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
+
+  if(email === "" || password === ""){
+    document.getElementById("error").innerText = "All fields required!";
+    return;
+  }
+
+  localStorage.setItem("user", email);
+  window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>

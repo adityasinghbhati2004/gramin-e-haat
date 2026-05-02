@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup - Gramin E-Haat</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Create Account 🚀</h2>
+  <form onsubmit="signup(event)">
+  <input type="text" id="name" placeholder="Full Name" required>
+  <input type="email" id="email" placeholder="Email Address" required>
+  <input type="password" id="password" placeholder="Create Password" required>
+  <button type="submit">Signup</button>
+  <p id="msg" style="color:green;"></p>
+  <p>Already have an account? <a href="login.html">Login</a></p>
+</form>
+</div>
+<script>
+function signup(e){
+  e.preventDefault();
+
+  let name = document.getElementById("name").value;
+
+  if(name === ""){
+    alert("Fill all fields!");
+    return;
+  }
+
+  document.getElementById("msg").innerText = "Signup Successful! Go to Login";
+}
+</script>
+
+</body>
+</html>

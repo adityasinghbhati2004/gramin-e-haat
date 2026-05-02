@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gramin E-Haat Bazar</title>
+  
+  <!-- Phosphor Icons for modern Gen-Z look -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- Animated Background Blobs -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeCart()"></div>
+
+<!-- NAVBAR -->
+<div class="navbar glass">
+  <div class="logo">
+    <i class="ph ph-sparkle"></i> E-Haat
+  </div>
+  <div class="nav-links">
+    <a onclick="showSection('home')">Home</a>
+    <a onclick="showSection('categories')">Categories</a>
+    <a onclick="showSection('products')">Shop</a>
+    <a onclick="showSection('creators')">Creators</a>
+    <a onclick="showSection('login')">Login</a>
+  </div>
+  <div class="cart-icon" onclick="openCart()">
+    <i class="ph ph-shopping-bag"></i>
+    <span class="cart-count" id="count">0</span>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <div class="hero">
+    <h1>Shop Desi.<br>Feel Global.</h1>
+    <p>Discover unique, mind-blowing handmade products from rural India. Support local artisans while flexing aesthetics.</p>
+    <button class="btn-glow" onclick="showSection('products')">Explore Now ✨</button>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div id="categories" class="section">
+  <h2 class="section-title">Vibe By Category</h2>
+  <div class="categories-grid">
+    <div class="cat-card glass" onclick="showSection('products')">
+      <i class="ph-fill ph-plant cat-icon"></i>
+      <span>Clay & Pottery</span>
+    </div>
+    <div class="cat-card glass" onclick="showSection('products')">
+      <i class="ph-fill ph-tree cat-icon"></i>
+      <span>Wood Crafts</span>
+    </div>
+    <div class="cat-card glass" onclick="showSection('products')">
+      <i class="ph-fill ph-paint-brush cat-icon"></i>
+      <span>Wall Art</span>
+    </div>
+    <div class="cat-card glass" onclick="showSection('products')">
+      <i class="ph-fill ph-tote cat-icon"></i>
+      <span>Handmade Bags</span>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="products" class="section">
+  <h2 class="section-title">Fresh Drops 🔥</h2>
+  <div class="grid">
+
+    <div class="card glass">
+      <button class="wishlist-btn" onclick="toggleWishlist(this)"><i class="ph ph-heart"></i></button>
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1586864387967-d02ef85d93e8" alt="Clay Pot">
+      </div>
+      <div class="card-body">
+        <h3>Aesthetic Clay Pot</h3>
+        <div class="price-row">
+          <span class="price">₹499</span>
+        </div>
+        <button class="btn-glow add-btn" onclick="addToCart('Clay Pot', 499)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="card glass">
+      <button class="wishlist-btn" onclick="toggleWishlist(this)"><i class="ph ph-heart"></i></button>
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Wood Craft">
+      </div>
+      <div class="card-body">
+        <h3>Minimalist Wood Art</h3>
+        <div class="price-row">
+          <span class="price">₹799</span>
+        </div>
+        <button class="btn-glow add-btn" onclick="addToCart('Wood Craft', 799)">Add to Cart</button>
+      </div>
+    </div>
+
+    <div class="card glass">
+      <button class="wishlist-btn" onclick="toggleWishlist(this)"><i class="ph ph-heart"></i></button>
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1549880181-56a44cf4a9a5" alt="Wall Art">
+      </div>
+      <div class="card-body">
+        <h3>Boho Wall Tapestry</h3>
+        <div class="price-row">
+          <span class="price">₹1199</span>
+        </div>
+        <button class="btn-glow add-btn" onclick="addToCart('Wall Art', 1199)">Add to Cart</button>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-title" style="margin-top: 80px;">Trending Right Now 📈</h2>
+  <div class="horizontal-scroll">
+    <div class="card glass">
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa" alt="Basket">
+      </div>
+      <div class="card-body">
+        <h3>Woven Tote Bag</h3>
+        <span class="price">₹899</span>
+      </div>
+    </div>
+    <div class="card glass">
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d" alt="Jewelry">
+      </div>
+      <div class="card-body">
+        <h3>Handcrafted Rings</h3>
+        <span class="price">₹599</span>
+      </div>
+    </div>
+    <div class="card glass">
+      <div class="card-img-wrapper">
+        <img src="https://images.unsplash.com/photo-1578301978018-3005759f48f7" alt="Decor">
+      </div>
+      <div class="card-body">
+        <h3>Ceramic Mug Set</h3>
+        <span class="price">₹1299</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATORS & TESTIMONIALS -->
+<div id="creators" class="section">
+  <h2 class="section-title">Support Local 🤝</h2>
+  
+  <div class="creators-banner glass">
+    <div class="creator-text">
+      <h3>Meet The Artisans</h3>
+      <p>100% of the profits go directly to the rural creators shaping these beautiful masterpieces. Empower communities with every purchase.</p>
+    </div>
+    <div class="creator-imgs">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb" alt="Creator">
+      <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d" alt="Creator">
+      <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9" alt="Creator">
+      <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04" alt="Creator">
+    </div>
+  </div>
+
+  <h2 class="section-title" style="margin-top: 80px;">What The Fam Says 💬</h2>
+  <div class="testimonials-grid">
+    <div class="testimonial-card glass">
+      <div class="user-info">
+        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" class="avatar" alt="User">
+        <div>
+          <h4>Aisha R.</h4>
+          <div class="stars">★★★★★</div>
+        </div>
+      </div>
+      <p>"Obsessed with the clay pots! They totally transformed my room's aesthetic."</p>
+    </div>
+    <div class="testimonial-card glass">
+      <div class="user-info">
+        <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36" class="avatar" alt="User">
+        <div>
+          <h4>Rohan M.</h4>
+          <div class="stars">★★★★★</div>
+        </div>
+      </div>
+      <p>"The quality is insane. Plus, knowing it supports local artists makes it even better."</p>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="section">
+  <h2 class="section-title">Welcome Back ✌️</h2>
+  <div class="form-box glass">
+    <div class="input-group">
+      <input type="email" placeholder="Email Address">
+    </div>
+    <div class="input-group">
+      <input type="password" placeholder="Password">
+    </div>
+    <button class="btn-glow" style="width: 100%" onclick="alert('Logged in!')">Log In</button>
+    <p style="text-align: center; margin-top: 20px; cursor: pointer;" onclick="showSection('signup')">New here? <b>Sign up</b></p>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="section">
+  <h2 class="section-title">Join The Vibe 🌟</h2>
+  <div class="form-box glass">
+    <div class="input-group">
+      <input type="text" placeholder="Full Name">
+    </div>
+    <div class="input-group">
+      <input type="email" placeholder="Email Address">
+    </div>
+    <div class="input-group">
+      <input type="password" placeholder="Password">
+    </div>
+    <button class="btn-glow" style="width: 100%" onclick="alert('Account created!')">Sign Up</button>
+    <p style="text-align: center; margin-top: 20px; cursor: pointer;" onclick="showSection('login')">Already have an account? <b>Log in</b></p>
+  </div>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" class="section">
+  <h2 class="section-title">Secure Checkout 💳</h2>
+  <div class="form-box glass">
+    <div class="input-group">
+      <input type="text" placeholder="Card Number">
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <div class="input-group"><input type="text" placeholder="MM/YY"></div>
+      <div class="input-group"><input type="text" placeholder="CVC"></div>
+    </div>
+    <div class="input-group">
+      <input type="text" placeholder="Name on Card">
+    </div>
+    <button class="btn-glow" style="width: 100%" onclick="pay()">Pay Now</button>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div id="cart" class="cart">
+  <div class="cart-header">
+    <h2>Your Cart <i class="ph ph-shopping-cart"></i></h2>
+    <button class="close-cart" onclick="closeCart()"><i class="ph ph-x"></i></button>
+  </div>
+  <ul id="cartItems" class="cart-items">
+    <!-- Items go here -->
+  </ul>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total:</span>
+      <span>₹<span id="total">0</span></span>
+    </div>
+    <button class="btn-glow" style="width: 100%" onclick="checkout()">Checkout 🚀</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Gramin E-Haat. Built with ❤️ for local creators.</p>
+</footer>
+
+<script>
+let cart = [];
+
+function showSection(id){
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleWishlist(btn) {
+  const icon = btn.querySelector('i');
+  if (icon.classList.contains('ph-heart')) {
+    icon.classList.remove('ph-heart');
+    icon.classList.add('ph-fill', 'ph-heart');
+    icon.style.color = '#EC4899';
+  } else {
+    icon.classList.remove('ph-fill', 'ph-heart');
+    icon.classList.add('ph-heart');
+    icon.style.color = 'var(--text-light)';
+  }
+}
+
+function addToCart(name, price){
+  cart.push({name, price});
+  updateCart();
+  
+  // Quick animation on the cart icon
+  const cartIcon = document.querySelector('.cart-icon');
+  cartIcon.style.transform = 'scale(1.3)';
+  setTimeout(() => cartIcon.style.transform = '', 200);
+}
+
+function updateCart(){
+  document.getElementById("count").innerText = cart.length;
+}
+
+function openCart(){
+  document.getElementById("cart").classList.add("active");
+  document.getElementById("overlay").style.display = "block";
+
+  let list = document.getElementById("cartItems");
+  list.innerHTML = "";
+  let total = 0;
+
+  if (cart.length === 0) {
+    list.innerHTML = "<li style='text-align:center; padding: 20px; color: #64748b;'>Your cart is empty 🥺</li>";
+  } else {
+    cart.forEach((item, i) => {
+      let li = document.createElement("li");
+      li.className = "cart-item";
+      li.innerHTML = `
+        <div>
+          <h4 style="margin-bottom: 5px">${item.name}</h4>
+          <span style="font-weight: bold; color: #10b981;">₹${item.price}</span>
+        </div>
+        <button onclick="removeItem(${i})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:20px;">
+          <i class="ph ph-trash"></i>
+        </button>
+      `;
+      list.appendChild(li);
+      total += item.price;
+    });
+  }
+
+  document.getElementById("total").innerText = total;
+}
+
+function removeItem(i){
+  cart.splice(i, 1);
+  openCart();
+  updateCart();
+}
+
+function closeCart(){
+  document.getElementById("cart").classList.remove("active");
+  document.getElementById("overlay").style.display = "none";
+}
+
+function checkout(){
+  if (cart.length === 0) {
+    alert("Add some items to your cart first!");
+    return;
+  }
+  closeCart();
+  showSection('payment');
+}
+
+function pay(){
+  alert("Payment Successful! 🎉 The creators thank you!");
+  cart = [];
+  updateCart();
+  showSection('home');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+INSERT INTO products (name, description, price, category, image_url, is_trending) VALUES ('Aesthetic Clay Pot', 'Handmade clay pot.', 499, 'Clay & Pottery', 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8', false);
+INSERT INTO products (name, description, price, category, image_url, is_trending) VALUES ('Minimalist Wood Art', 'Carved wood decor.', 799, 'Wood Crafts', 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c', false);
+INSERT INTO products (name, description, price, category, image_url, is_trending) VALUES ('Woven Tote Bag', 'Trending tote.', 899, 'Handmade Bags', 'https://images.unsplash.com/photo-1610701596007-11502861dcfa', true);
+INSERT INTO products (name, description, price, category, image_url, is_trending) VALUES ('Handcrafted Rings', 'Silver rings.', 599, 'Jewelry', 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d', true);
