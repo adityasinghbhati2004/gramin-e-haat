@@ -1,4 +1,4 @@
-export const API_BASE = 'http://localhost:8080/api';
+export const API_BASE = 'https://gramin-e-haat.onrender.com/api';
 
 export const fetchProducts = async (search = '') => {
     const res = await fetch(`${API_BASE}/products${search ? '?search=' + search : ''}`);
