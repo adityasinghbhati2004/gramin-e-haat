@@ -266,3 +266,5 @@ function Checkout({ cart, total, user, clearCart }) {
     </div>
   );
 }
+
+export default App;
