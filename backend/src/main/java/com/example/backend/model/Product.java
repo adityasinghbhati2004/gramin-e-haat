@@ -17,4 +17,6 @@ public class Product {
     private String category;
     private String imageUrl;
     private boolean isTrending;
+    private String sourcePlatform; // e.g., Amazon, Flipkart, Meesho
+    private String productUrl; // External affiliate/product link
 }

@@ -1,0 +1,115 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import ProductCard from '../components/ProductCard';
+
+const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shipping = subtotal > 0 ? (subtotal > 1000 ? 0 : 50) : 0;
+  const total = subtotal + shipping;
+
+  // Similar products logic (random 4 for suggestion)
+  const similarProducts = products.filter(p => !cart.find(c => c.id === p.id)).slice(0, 4);
+
+  if (cart.length === 0) {
+    return (
+      <div className="section">
+        <div className="container">
+          <div className="empty-state">
+            <ShoppingBag size={80} style={{ margin: '0 auto 20px', color: 'var(--text-light)' }} />
+            <h2 style={{ marginBottom: '15px' }}>Your Cart is Empty</h2>
+            <p style={{ marginBottom: '30px' }}>Looks like you haven't added anything to your cart yet.</p>
+            <Link to="/categories" className="btn btn-primary">Start Shopping</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="section">
+      <div className="container">
+        <h1 className="section-title">Your Cart</h1>
+        
+        <div className="cart-layout">
+          <div className="cart-items">
+            {cart.map((item) => (
+              <div key={item.id} className="cart-item">
+                <img src={item.imageUrl} alt={item.name} className="cart-item-img" />
+                <div className="cart-item-info">
+                  <div className="cart-item-title">{item.name}</div>
+                  {item.sourcePlatform && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', marginBottom: '8px' }}>
+                      Fulfilled via {item.sourcePlatform}
+                    </div>
+                  )}
+                  <div className="cart-item-price">₹{item.price}</div>
+                </div>
+                
+                <div className="qty-controls">
+                  <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}>
+                    <Minus size={14} />
+                  </button>
+                  <span style={{ width: '20px', textAlign: 'center' }}>{item.quantity}</span>
+                  <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}>
+                    <Plus size={14} />
+                  </button>
+                </div>
+
+                <button 
+                  className="btn btn-outline" 
+                  style={{ color: 'var(--danger)', borderColor: 'transparent', padding: '10px' }}
+                  onClick={() => onRemove(item.id)}
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="cart-summary">
+            <h3 style={{ marginBottom: '20px', fontWeight: '700' }}>Order Summary</h3>
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="summary-row">
+              <span>Shipping</span>
+              <span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span>
+            </div>
+            
+            <div className="summary-row" style={{ marginTop: '20px' }}>
+              <select className="btn btn-outline" style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-color)' }}>
+                <option value="">Select Address</option>
+                <option value="home">Home: 123 Main St, New Delhi</option>
+                <option value="work">Work: Tech Park, Bangalore</option>
+              </select>
+            </div>
+
+            <div className="summary-total">
+              <span>Total</span>
+              <span>₹{total.toFixed(2)}</span>
+            </div>
+            
+            <button className="btn btn-primary" style={{ width: '100%', padding: '15px' }}>
+              Proceed to Buy
+            </button>
+          </div>
+        </div>
+
+        {similarProducts.length > 0 && (
+          <div style={{ marginTop: '60px' }}>
+            <h2 className="section-title">Similar Product Suggestions</h2>
+            <div className="product-grid">
+              {similarProducts.map(product => (
+                <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Cart;
