@@ -1,11 +1,13 @@
 package com.example.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Data
 @Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +22,13 @@ public class User {
     private String name;
     private String address;
     private String phone;
+
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private UserRole role;
+
+    @Column(nullable = false)
+    private boolean sellerVerified = false;
+
+    private String govIdUrl;
 }

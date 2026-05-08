@@ -1,12 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { createOrder, resolveImageUrl, createRazorpayOrder, fetchRazorpayKey } from '../api';
 
-const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
+const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart, user, onClearCart }) => {
+  const navigate = useNavigate();
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 0 ? (subtotal > 1000 ? 0 : 50) : 0;
   const total = subtotal + shipping;
+  const [selectedAddress, setSelectedAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('UPI');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Similar products logic (random 4 for suggestion)
   const similarProducts = products.filter(p => !cart.find(c => c.id === p.id)).slice(0, 4);
@@ -26,6 +33,93 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
     );
   }
 
+  const handleCheckout = async () => {
+    setError('');
+    setSuccess('');
+    if (!user) {
+      setError('Please log in to place an order.');
+      return;
+    }
+    if (!selectedAddress) {
+      setError('Please select a shipping address.');
+      return;
+    }
+    setIsSubmitting(true);
+    
+    try {
+      const orderPayload = {
+        userId: user.id,
+        paymentMethod,
+        shippingAddress: selectedAddress,
+        items: cart.map(item => ({
+          productId: item.id,
+          quantity: item.quantity
+        }))
+      };
+
+      if (paymentMethod === 'UPI') {
+        if (!window.Razorpay) {
+          setError('Razorpay SDK not loaded. Please refresh the page.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Fetch order and key in parallel
+        const [razorpayOrder, key] = await Promise.all([
+          createRazorpayOrder(total),
+          fetchRazorpayKey()
+        ]);
+
+        const options = {
+          key: key,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency || "INR",
+          name: "Gramin E-Haat Bazaar",
+          description: "Purchase from Artisans",
+          order_id: razorpayOrder.id,
+          handler: async function (response) {
+            try {
+              await createOrder(orderPayload);
+              onClearCart();
+              setIsSubmitting(false);
+              navigate('/dashboard?tab=orders');
+            } catch (err) {
+              setError(err.message || 'Order creation failed after payment');
+              setIsSubmitting(false);
+            }
+          },
+          prefill: {
+            name: user.name,
+            email: user.email,
+            contact: user.phone || ""
+          },
+          theme: {
+            color: "#ff4757"
+          },
+          modal: {
+            ondismiss: function() {
+              setIsSubmitting(false);
+            }
+          }
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response){
+          setError(`Payment Failed: ${response.error.description}`);
+          setIsSubmitting(false);
+        });
+        rzp.open();
+      } else {
+        await createOrder(orderPayload);
+        onClearCart();
+        setIsSubmitting(false);
+        navigate('/dashboard?tab=orders');
+      }
+    } catch (err) {
+      setError(err.message || 'Checkout failed');
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="section">
       <div className="container">
@@ -35,7 +129,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
           <div className="cart-items">
             {cart.map((item) => (
               <div key={item.id} className="cart-item">
-                <img src={item.imageUrl} alt={item.name} className="cart-item-img" />
+                <img src={resolveImageUrl(item.imageUrl)} alt={item.name} className="cart-item-img" />
                 <div className="cart-item-info">
                   <div className="cart-item-title">{item.name}</div>
                   {item.sourcePlatform && (
@@ -47,7 +141,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
                 </div>
                 
                 <div className="qty-controls">
-                  <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}>
+                  <button className="qty-btn" onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}>
                     <Minus size={14} />
                   </button>
                   <span style={{ width: '20px', textAlign: 'center' }}>{item.quantity}</span>
@@ -79,10 +173,27 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
             </div>
             
             <div className="summary-row" style={{ marginTop: '20px' }}>
-              <select className="btn btn-outline" style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-color)' }}>
+              <select
+                className="btn btn-outline"
+                style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-color)' }}
+                value={selectedAddress}
+                onChange={(e) => setSelectedAddress(e.target.value)}
+              >
                 <option value="">Select Address</option>
-                <option value="home">Home: 123 Main St, New Delhi</option>
-                <option value="work">Work: Tech Park, Bangalore</option>
+                <option value="Home: 123 Main St, New Delhi">Home: 123 Main St, New Delhi</option>
+                <option value="Work: Tech Park, Bangalore">Work: Tech Park, Bangalore</option>
+              </select>
+            </div>
+
+            <div className="summary-row">
+              <select
+                className="btn btn-outline"
+                style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-color)' }}
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              >
+                <option value="UPI">UPI (Razorpay Checkout)</option>
+                <option value="COD">Cash on Delivery</option>
               </select>
             </div>
 
@@ -91,8 +202,23 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart }) => {
               <span>₹{total.toFixed(2)}</span>
             </div>
             
-            <button className="btn btn-primary" style={{ width: '100%', padding: '15px' }}>
-              Proceed to Buy
+            {error && (
+              <div style={{ color: 'var(--danger)', marginBottom: '12px', fontSize: '0.9rem' }}>
+                {error} {!user && <Link to="/login">Login</Link>}
+              </div>
+            )}
+            {success && (
+              <div style={{ color: 'var(--success)', marginBottom: '12px', fontSize: '0.9rem' }}>
+                {success}
+              </div>
+            )}
+            <button
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '15px' }}
+              onClick={handleCheckout}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : 'Proceed to Buy'}
             </button>
           </div>
         </div>

@@ -1,21 +1,11 @@
-import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { Palette, Scissors, Tent, Gem, Image } from 'lucide-react';
 
 const Home = ({ products, onAddToCart }) => {
-  const [loading, setLoading] = useState(true);
+  const loading = products.length === 0;
 
-  useEffect(() => {
-    if (products.length > 0) {
-      setLoading(false);
-    } else {
-      const timer = setTimeout(() => setLoading(false), 1500); // simulate loading
-      return () => clearTimeout(timer);
-    }
-  }, [products]);
-
-  const trendingProducts = products.filter(p => p.trending);
+  const trendingProducts = products.filter(p => Boolean(p.trending ?? p.isTrending));
   const featuredProducts = products.slice(0, 4);
 
   return (

@@ -1,11 +1,13 @@
 package com.example.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "products")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +21,7 @@ public class Product {
     private boolean isTrending;
     private String sourcePlatform; // e.g., Amazon, Flipkart, Meesho
     private String productUrl; // External affiliate/product link
+
+    private Long sellerId;
+    private Integer stockQuantity = 0;
 }

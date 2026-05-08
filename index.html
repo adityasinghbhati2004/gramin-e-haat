@@ -28,6 +28,9 @@
   <div class="logo">
     <i class="ph ph-sparkle"></i> E-Haat
   </div>
+  <div style="background: #ff4757; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin: 0 10px;">
+    Static Prototype - Use <a href="http://localhost:5175" style="color: white; text-decoration: underline;">React App</a> for full features
+  </div>
   <div class="nav-links">
     <a onclick="showSection('home')">Home</a>
     <a onclick="showSection('categories')">Categories</a>
@@ -269,11 +272,48 @@
 <footer>
   <p>© 2026 Gramin E-Haat. Built with ❤️ for local creators.</p>
 </footer>
-
 <script>
 let cart = [];
 
+// API Integration
+const API_BASE = 'http://localhost:8081/api';
+
+async function fetchRealProducts() {
+  try {
+    const res = await fetch(`${API_BASE}/products`);
+    if (!res.ok) return;
+    const products = await res.json();
+    if (products.length > 0) {
+      const grid = document.querySelector('#products .grid');
+      grid.innerHTML = ''; // Clear hardcoded
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card glass';
+        card.innerHTML = `
+          <button class="wishlist-btn" onclick="toggleWishlist(this)"><i class="ph ph-heart"></i></button>
+          <div class="card-img-wrapper">
+            <img src="${p.imageUrl.startsWith('/') ? 'http://localhost:8081' + p.imageUrl : p.imageUrl}" alt="${p.name}">
+          </div>
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <div class="price-row">
+              <span class="price">₹${p.price}</span>
+            </div>
+            <button class="btn-glow add-btn" onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  } catch (e) {
+    console.error('Failed to fetch real products:', e);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', fetchRealProducts);
+
 function showSection(id){
+...
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo({ top: 0, behavior: 'smooth' });

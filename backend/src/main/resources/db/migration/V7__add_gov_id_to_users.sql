@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN gov_id_url VARCHAR(255);

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#fff4df"/>
+  <rect x="210" y="120" width="380" height="320" fill="#ffd16b" stroke="#1f2a44" stroke-width="14"/>
+  <circle cx="300" cy="220" r="45" fill="#ff6b6b"/>
+  <circle cx="500" cy="220" r="45" fill="#4ecdc4"/>
+  <circle cx="400" cy="320" r="55" fill="#6c5ce7"/>
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#3b2f1f">Madhubani Art</text>
+</svg>

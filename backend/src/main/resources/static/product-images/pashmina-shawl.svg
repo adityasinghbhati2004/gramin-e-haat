@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f8ecef"/>
+  <rect x="180" y="170" width="440" height="240" rx="24" fill="#d08ca6"/>
+  <path d="M200 220 Q400 130 600 220" stroke="#fbe4ec" stroke-width="10" fill="none"/>
+  <path d="M200 280 Q400 370 600 280" stroke="#fbe4ec" stroke-width="10" fill="none"/>
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#7a3751">Pashmina Shawl</text>
+</svg>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { fetchProducts } from './api';
 import './index.css';
 
@@ -12,6 +12,11 @@ import Home from './pages/Home';
 import Categories from './pages/Categories';
 import Cart from './pages/Cart';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ProductDetails from './pages/ProductDetails';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -20,16 +25,32 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  useEffect(() => {
+  const fetchAllProducts = () => {
     fetchProducts().then(data => {
       setProducts(data);
     }).catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchAllProducts();
   }, []);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
 
   const handleAddToCart = (product) => {
     setCart(prev => {
@@ -50,6 +71,14 @@ function App() {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleClearCart = () => {
+    setCart([]);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   const filteredProducts = searchQuery
     ? products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : products;
@@ -59,13 +88,17 @@ function App() {
   return (
     <Router>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Navbar cartCount={totalCartItems} onSearch={setSearchQuery} />
+        <Navbar cartCount={totalCartItems} onSearch={setSearchQuery} user={user} onLogout={handleLogout} />
         
         <main style={{ flex: 1 }}>
           <Routes>
             <Route 
               path="/" 
               element={<Home products={filteredProducts} onAddToCart={handleAddToCart} />} 
+            />
+            <Route
+              path="/product/:id"
+              element={<ProductDetails onAddToCart={handleAddToCart} user={user} />}
             />
             <Route 
               path="/categories" 
@@ -80,12 +113,24 @@ function App() {
                   onRemove={handleRemoveFromCart}
                   products={products}
                   onAddToCart={handleAddToCart}
+                  user={user}
+                  onClearCart={handleClearCart}
                 />
               } 
             />
             <Route 
               path="/dashboard" 
-              element={<Dashboard />} 
+              element={<Dashboard user={user} onLogout={handleLogout} onProductChange={fetchAllProducts} />} 
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact user={user} />} />
+            <Route
+              path="/login"
+              element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={setUser} />}
+            />
+            <Route
+              path="/signup"
+              element={user ? <Navigate to="/dashboard" replace /> : <Signup onSignup={setUser} />}
             />
           </Routes>
         </main>

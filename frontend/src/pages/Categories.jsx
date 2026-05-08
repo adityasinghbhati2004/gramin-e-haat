@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
@@ -6,38 +6,29 @@ const Categories = ({ products, onAddToCart }) => {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('cat') || 'All';
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [selectedCategoryOverride, setSelectedCategoryOverride] = useState('');
   const [sortBy, setSortBy] = useState('none');
-  const [loading, setLoading] = useState(true);
+  const selectedCategory = selectedCategoryOverride || initialCategory;
 
   const categoriesList = ['All', 'Handicrafts', 'Artifacts', 'Dresses', 'Pottery', 'Handloom', 'Jewelry', 'Art & Paintings', 'Decor'];
 
-  useEffect(() => {
-    setSelectedCategory(initialCategory);
-  }, [initialCategory]);
+  const filteredProducts = useMemo(() => {
+    const byCategory = selectedCategory === 'All'
+      ? [...products]
+      : products.filter((p) => {
+          const cat = p.category ? p.category.toLowerCase() : '';
+          const selected = selectedCategory.toLowerCase();
+          return cat.includes(selected) || selected.includes(cat);
+        });
 
-  useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, [selectedCategory, sortBy, products]);
+    if (sortBy === 'price_asc') {
+      byCategory.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price_desc') {
+      byCategory.sort((a, b) => b.price - a.price);
+    }
 
-  let filteredProducts = products;
-  
-  if (selectedCategory !== 'All') {
-    filteredProducts = filteredProducts.filter(p => {
-      // Basic matching
-      const cat = p.category ? p.category.toLowerCase() : '';
-      const selCat = selectedCategory.toLowerCase();
-      return cat.includes(selCat) || selCat.includes(cat);
-    });
-  }
-
-  if (sortBy === 'price_asc') {
-    filteredProducts.sort((a, b) => a.price - b.price);
-  } else if (sortBy === 'price_desc') {
-    filteredProducts.sort((a, b) => b.price - a.price);
-  }
+    return byCategory;
+  }, [products, selectedCategory, sortBy]);
 
   return (
     <div className="section">
@@ -49,7 +40,7 @@ const Categories = ({ products, onAddToCart }) => {
             <select 
               className="btn btn-outline"
               value={selectedCategory} 
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => setSelectedCategoryOverride(e.target.value)}
               style={{ padding: '8px 15px', backgroundColor: 'var(--card-bg)' }}
             >
               {categoriesList.map(c => (
@@ -71,9 +62,7 @@ const Categories = ({ products, onAddToCart }) => {
         </div>
 
         <div className="product-grid">
-          {loading ? (
-            [...Array(6)].map((_, i) => <div key={i} className="skeleton skeleton-card"></div>)
-          ) : filteredProducts.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
             ))

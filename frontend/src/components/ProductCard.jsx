@@ -1,5 +1,6 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { ExternalLink, ShoppingCart } from 'lucide-react';
+import { resolveImageUrl } from '../api';
 
 const ProductCard = ({ product, onAddToCart }) => {
   const getPlatformClass = (platform) => {
@@ -11,7 +12,7 @@ const ProductCard = ({ product, onAddToCart }) => {
     return 'platform-amazon'; // default
   };
 
-  const handleExternalClick = (e) => {
+  const handleExternalClick = () => {
     if (product.productUrl) {
       window.open(product.productUrl, '_blank');
     }
@@ -19,14 +20,14 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   return (
     <div className="product-card">
-      <div style={{ position: 'relative', cursor: 'pointer' }} onClick={handleExternalClick}>
-        <img src={product.imageUrl} alt={product.name} className="product-img" />
-      </div>
+      <Link to={`/product/${product.id}`} style={{ position: 'relative' }}>
+        <img src={resolveImageUrl(product.imageUrl)} alt={product.name} className="product-img" />
+      </Link>
       <div className="product-info">
         <div className="product-category">{product.category}</div>
-        <h3 className="product-name" style={{ cursor: 'pointer' }} onClick={handleExternalClick}>
-          {product.name}
-        </h3>
+        <Link to={`/product/${product.id}`} className="product-name-link">
+          <h3 className="product-name">{product.name}</h3>
+        </Link>
         
         {product.sourcePlatform && (
           <div>

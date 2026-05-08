@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f4ead2"/>
+  <ellipse cx="400" cy="330" rx="190" ry="120" fill="#ba8b4f"/>
+  <ellipse cx="400" cy="300" rx="170" ry="70" fill="#d3a36a"/>
+  <text x="400" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" fill="#6d4c22">Bamboo Basket</text>
+</svg>
