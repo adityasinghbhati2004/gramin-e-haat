@@ -31,6 +31,15 @@ public class PaymentController {
             double amountDouble = Double.parseDouble(data.get("amount").toString());
             int amount = (int) (amountDouble * 100); // amount in paise
 
+            if (keyId.startsWith("rzp_test_dummy")) {
+                // Mock Razorpay Order for testing without real keys
+                return ResponseEntity.ok(Map.of(
+                    "id", "order_mock_" + System.currentTimeMillis(),
+                    "amount", amount,
+                    "currency", "INR"
+                ));
+            }
+
             RazorpayClient client = new RazorpayClient(keyId, keySecret);
             JSONObject options = new JSONObject();
             options.put("amount", amount);
