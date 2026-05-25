@@ -38,5 +38,5 @@ public class User {
     private java.time.LocalDateTime otpExpiry;
     
     @Column(name = "is_verified", nullable = false)
-    private boolean isVerified = false;
+    private boolean isVerified = true;
 }

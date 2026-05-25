@@ -60,18 +60,11 @@ public class AuthController {
         user.setSellerVerified(false);
         user.setGovIdUrl(request.getGovIdUrl());
         
-        // Generate and set OTP for new registration
-        String otp = generateOtp();
-        user.setOtp(otp);
-        user.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
-        user.setVerified(false);
+        // OTP completely bypassed, set directly to verified
+        user.setVerified(true);
 
         User savedUser = userRepository.save(user);
-
-        // Send OTP via SmsService (which logs to console in bypass mode)
-        smsService.sendOtpSms(savedUser.getPhone(), otp);
-
-        return ResponseEntity.ok(Map.of("requiresOtp", true, "email", savedUser.getEmail()));
+        return ResponseEntity.ok(toUserResponse(savedUser));
     }
 
     @PostMapping("/login")
@@ -84,16 +77,10 @@ public class AuthController {
                 user = userRepository.save(user);
             }
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()) || user.getPassword().equals(loginRequest.getPassword())) {
-                // If not verified, trigger OTP verification
+                // Ensure user is verified (bypassed)
                 if (!user.isVerified()) {
-                    String otp = generateOtp();
-                    user.setOtp(otp);
-                    user.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
-                    userRepository.save(user);
-
-                    smsService.sendOtpSms(user.getPhone(), otp);
-
-                    return ResponseEntity.ok(Map.of("requiresOtp", true, "email", user.getEmail()));
+                    user.setVerified(true);
+                    user = userRepository.save(user);
                 }
 
                 if (user.getPassword().equals(loginRequest.getPassword())) {
