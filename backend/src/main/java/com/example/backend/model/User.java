@@ -31,4 +31,12 @@ public class User {
     private boolean sellerVerified = false;
 
     private String govIdUrl;
+
+    private String otp;
+    
+    @Column(name = "otp_expiry")
+    private java.time.LocalDateTime otpExpiry;
+    
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
 }

@@ -3,12 +3,14 @@ package com.example.backend.controller;
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.SignupRequest;
 import com.example.backend.dto.UserResponse;
+import com.example.backend.dto.VerifyOtpRequest;
 import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.model.UserRole;
 import com.example.backend.repository.UserRoleRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.FileStorageService;
+import com.example.backend.service.SmsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +37,13 @@ public class AuthController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private SmsService smsService;
+
+    private String generateOtp() {
+        return String.format("%06d", (int) (Math.random() * 1000000));
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -50,8 +59,19 @@ public class AuthController {
         user.setRole(userRole);
         user.setSellerVerified(false);
         user.setGovIdUrl(request.getGovIdUrl());
+        
+        // Generate and set OTP for new registration
+        String otp = generateOtp();
+        user.setOtp(otp);
+        user.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
+        user.setVerified(false);
+
         User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(toUserResponse(savedUser));
+
+        // Send OTP via SmsService (which logs to console in bypass mode)
+        smsService.sendOtpSms(savedUser.getPhone(), otp);
+
+        return ResponseEntity.ok(Map.of("requiresOtp", true, "email", savedUser.getEmail()));
     }
 
     @PostMapping("/login")
@@ -63,16 +83,51 @@ public class AuthController {
                 user.setRole(resolveOrCreateRole(Role.BUYER));
                 user = userRepository.save(user);
             }
-            if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()) || user.getPassword().equals(loginRequest.getPassword())) {
+                // If not verified, trigger OTP verification
+                if (!user.isVerified()) {
+                    String otp = generateOtp();
+                    user.setOtp(otp);
+                    user.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(10));
+                    userRepository.save(user);
+
+                    smsService.sendOtpSms(user.getPhone(), otp);
+
+                    return ResponseEntity.ok(Map.of("requiresOtp", true, "email", user.getEmail()));
+                }
+
+                if (user.getPassword().equals(loginRequest.getPassword())) {
+                    user.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
+                    User migratedUser = userRepository.save(user);
+                    return ResponseEntity.ok(toUserResponse(migratedUser));
+                }
                 return ResponseEntity.ok(toUserResponse(user));
-            }
-            if (user.getPassword().equals(loginRequest.getPassword())) {
-                user.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
-                User migratedUser = userRepository.save(user);
-                return ResponseEntity.ok(toUserResponse(migratedUser));
             }
         }
         return ResponseEntity.status(401).body("Invalid credentials");
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpRequest verifyRequest) {
+        Optional<User> userOpt = userRepository.findByEmail(verifyRequest.getEmail());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+        User user = userOpt.get();
+        if (user.getOtp() == null || !user.getOtp().equals(verifyRequest.getOtp())) {
+            return ResponseEntity.badRequest().body("Invalid OTP");
+        }
+        if (user.getOtpExpiry() == null || user.getOtpExpiry().isBefore(java.time.LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("OTP has expired");
+        }
+
+        // OTP verified successfully
+        user.setVerified(true);
+        user.setOtp(null);
+        user.setOtpExpiry(null);
+        User verifiedUser = userRepository.save(user);
+
+        return ResponseEntity.ok(toUserResponse(verifiedUser));
     }
 
     @PostMapping(value = "/upload-gov-id", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)

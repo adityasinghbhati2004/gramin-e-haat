@@ -125,6 +125,15 @@ export const signupUser = async (user) => {
     return handleResponse(res, 'Signup failed');
 };
 
+export const verifyOtp = async (email, otp) => {
+    const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+    });
+    return handleResponse(res, 'OTP verification failed');
+};
+
 export const createOrder = async (orderData) => {
     const res = await fetch(`${API_BASE}/orders/create`, {
         method: 'POST',
@@ -142,6 +151,13 @@ export const fetchUserOrders = async (userId) => {
 export const fetchSellerOrders = async (sellerId) => {
     const res = await fetch(`${API_BASE}/orders/seller/${sellerId}`);
     return handleResponse(res, 'Failed to fetch seller orders');
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+    const res = await fetch(`${API_BASE}/orders/${orderId}/status?status=${status}`, {
+        method: 'PUT',
+    });
+    return handleResponse(res, 'Failed to update order status');
 };
 
 export const fetchProductReviews = async (productId) => {
@@ -199,4 +215,12 @@ export const fetchAdminOrders = async () => {
 export const fetchAdminSummary = async () => {
     const res = await fetch(`${API_BASE}/admin/summary`);
     return handleResponse(res, 'Failed to fetch summary');
+};
+
+export const downloadSellerReport = (sellerId) => {
+    window.open(`${API_BASE}/orders/seller/${sellerId}/report`, '_blank');
+};
+
+export const downloadAdminReport = () => {
+    window.open(`${API_BASE}/admin/orders/report`, '_blank');
 };

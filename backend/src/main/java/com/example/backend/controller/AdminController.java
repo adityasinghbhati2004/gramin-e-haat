@@ -12,6 +12,8 @@ import com.example.backend.repository.UserRoleRepository;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -85,6 +87,39 @@ public class AdminController {
         summary.put("orders", orderRepository.count());
         summary.put("complaints", complaintRepository.count());
         return summary;
+    }
+
+    @GetMapping("/orders/report")
+    public ResponseEntity<byte[]> generateAdminReport() {
+        List<Order> orders = orderRepository.findAll();
+        StringBuilder csv = new StringBuilder();
+        csv.append("Order ID,Customer ID,Seller ID,Product ID,Product Name,Quantity Ordered,Unit Price,Total Price,Order Status,Order Date\n");
+
+        for (Order order : orders) {
+            for (com.example.backend.model.OrderItem item : order.getItems()) {
+                Long sellerId = item.getProduct() != null ? item.getProduct().getSellerId() : null;
+                Long productId = item.getProduct() != null ? item.getProduct().getId() : null;
+                String productName = item.getProduct() != null ? item.getProduct().getName() : "Unknown";
+                
+                csv.append(order.getId()).append(",")
+                   .append(order.getUserId()).append(",")
+                   .append(sellerId).append(",")
+                   .append(productId).append(",")
+                   .append("\"").append(productName.replace("\"", "\"\"")).append("\",")
+                   .append(item.getQuantity()).append(",")
+                   .append(item.getUnitPrice()).append(",")
+                   .append(item.getQuantity() * item.getUnitPrice()).append(",")
+                   .append(order.getStatus()).append(",")
+                   .append(order.getOrderDate()).append("\n");
+            }
+        }
+
+        byte[] csvBytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=admin_report.csv");
+        headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
+
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
     }
 
     private UserResponse toUserResponse(User user) {

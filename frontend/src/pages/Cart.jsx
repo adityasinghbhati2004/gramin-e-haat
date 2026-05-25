@@ -9,7 +9,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart, user, o
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 0 ? (subtotal > 1000 ? 0 : 50) : 0;
   const total = subtotal + shipping;
-  const [selectedAddress, setSelectedAddress] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState(() => user?.address || '');
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -77,7 +77,7 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart, user, o
           name: "Gramin E-Haat Bazaar",
           description: "Purchase from Artisans",
           order_id: razorpayOrder.id,
-          handler: async function (response) {
+          handler: async function () {
             try {
               await createOrder(orderPayload);
               onClearCart();
@@ -180,6 +180,9 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart, user, o
                 onChange={(e) => setSelectedAddress(e.target.value)}
               >
                 <option value="">Select Address</option>
+                {user && user.address && (
+                  <option value={user.address}>Registered Address: {user.address}</option>
+                )}
                 <option value="Home: 123 Main St, New Delhi">Home: 123 Main St, New Delhi</option>
                 <option value="Work: Tech Park, Bangalore">Work: Tech Park, Bangalore</option>
               </select>

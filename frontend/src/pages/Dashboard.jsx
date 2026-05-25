@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import {
   createProduct,
@@ -13,7 +13,10 @@ import {
   resolveImageUrl,
   updateAdminUser,
   updateProduct,
-  uploadProductImage
+  uploadProductImage,
+  updateOrderStatus,
+  downloadSellerReport,
+  downloadAdminReport
 } from '../api';
 
 const defaultProductForm = {
@@ -41,7 +44,7 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
   const [sellerOrders, setSellerOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [complaints, setComplaints] = useState([]);
+  const [, setComplaints] = useState([]);
   const [summary, setSummary] = useState(null);
 
   const [form, setForm] = useState(defaultProductForm);
@@ -56,18 +59,22 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
 
   const tabs = useMemo(() => {
     const base = [
+      { id: 'account', label: 'My Account' },
       { id: 'orders', label: 'My Purchases' },
       { id: 'complaints', label: 'Complaints' }
     ];
     if (role === 'SELLER') {
       return [
+        { id: 'account', label: 'My Account' },
         { id: 'products', label: 'My Products' },
         { id: 'seller-orders', label: 'Received Orders' },
-        ...base
+        { id: 'orders', label: 'My Purchases' },
+        { id: 'complaints', label: 'Complaints' }
       ];
     }
     if (role === 'ADMIN') {
       return [
+        { id: 'account', label: 'My Account' },
         { id: 'users', label: 'Users' },
         { id: 'orders', label: 'All Orders' },
         { id: 'complaints', label: 'Complaints' },
@@ -79,11 +86,11 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
 
   useEffect(() => {
     if (!user) return;
-    setError('');
     
     // Sync activeTab with URL param if it changes
     const tabParam = searchParams.get('tab');
     if (tabParam && tabParam !== activeTab) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(tabParam);
     }
 
@@ -235,6 +242,25 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
     }
   };
 
+  const handleUpdateStatus = async (orderId, status) => {
+    try {
+      await updateOrderStatus(orderId, status);
+      // Refresh orders
+      if (role === 'ADMIN') {
+        fetchAdminOrders().then(setOrders);
+      } else {
+        fetchUserOrders(user.id).then(setOrders);
+      }
+      setSuccess(`Order updated to ${status}`);
+    } catch (err) {
+      setError(err.message || 'Failed to update order status');
+    }
+  };
+
+  const handleTrackOrder = (order) => {
+    alert(`Tracking Information for Order #${order.id}:\nStatus: ${order.status}\nCarrier: Gramin Logistics\nTracking ID: GRM${order.id}99`);
+  };
+
   return (
     <div className="section">
       <div className="container">
@@ -262,12 +288,38 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
             {error && <div className="auth-error" style={{ marginBottom: '10px' }}>{error}</div>}
             {success && <div style={{ color: 'var(--success)', marginBottom: '10px' }}>{success}</div>}
 
+            {activeTab === 'account' && (
+              <div>
+                <h2>My Account</h2>
+                <div className="card" style={{ maxWidth: '500px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div>
+                      <strong>Name:</strong> <span style={{ marginLeft: '10px' }}>{user.name}</span>
+                    </div>
+                    <div>
+                      <strong>Email:</strong> <span style={{ marginLeft: '10px' }}>{user.email}</span>
+                    </div>
+                    <div>
+                      <strong>Role:</strong> <span style={{ marginLeft: '10px' }} className={`status-badge status-${role.toLowerCase()}`}>{role}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'orders' && (
               <div>
-                <h2>{role === 'ADMIN' ? 'All Orders' : 'My Purchases'}</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h2>{role === 'ADMIN' ? 'All Orders' : 'My Purchases'}</h2>
+                  {role === 'ADMIN' && (
+                    <button className="btn btn-primary" onClick={() => downloadAdminReport()}>
+                      Download Report
+                    </button>
+                  )}
+                </div>
                 {orders.length === 0 ? <div className="empty-state">No orders found.</div> : (
                   <table className="table">
-                    <thead><tr><th>Order ID</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+                    <thead><tr><th>Order ID</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
                     <tbody>
                       {orders.map(order => (
                         <tr key={order.id}>
@@ -275,6 +327,45 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
                           <td>₹{order.totalAmount?.toFixed(2)}</td>
                           <td><span className={`status-badge status-${order.status?.toLowerCase()}`}>{order.status}</span></td>
                           <td>{new Date(order.orderDate).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {role === 'ADMIN' ? (
+                                <select 
+                                  value={order.status} 
+                                  onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                                  className="auth-input"
+                                  style={{ padding: '4px', height: 'auto', minWidth: '120px' }}
+                                >
+                                  <option value="PENDING">PENDING</option>
+                                  <option value="PAID">PAID</option>
+                                  <option value="SHIPPED">SHIPPED</option>
+                                  <option value="DELIVERED">DELIVERED</option>
+                                  <option value="RETURN_REQUESTED">RETURN REQ</option>
+                                  <option value="RETURNED">RETURNED</option>
+                                  <option value="REFUNDED">REFUNDED</option>
+                                  <option value="CANCELLED">CANCELLED</option>
+                                </select>
+                              ) : (
+                                <>
+                                  {(order.status === 'PAID' || order.status === 'SHIPPED') && (
+                                    <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => handleTrackOrder(order)}>Track</button>
+                                  )}
+                                  {order.status === 'PENDING' && (
+                                    <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => handleUpdateStatus(order.id, 'CANCELLED')}>Cancel</button>
+                                  )}
+                                  {order.status === 'DELIVERED' && (
+                                    <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px' }} onClick={() => handleUpdateStatus(order.id, 'RETURN_REQUESTED')}>Return</button>
+                                  )}
+                                  {(order.status === 'RETURN_REQUESTED') && (
+                                    <span style={{ fontSize: '12px', color: 'orange' }}>Return Processing</span>
+                                  )}
+                                  {(order.status === 'CANCELLED' || order.status === 'RETURNED' || order.status === 'REFUNDED') && (
+                                    <span style={{ fontSize: '12px', color: 'gray' }}>Closed</span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -285,7 +376,12 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
 
             {activeTab === 'seller-orders' && (
               <div>
-                <h2>Received Orders</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h2>Received Orders</h2>
+                  <button className="btn btn-primary" onClick={() => downloadSellerReport(user.id)}>
+                    Download Report
+                  </button>
+                </div>
                 {sellerOrders.length === 0 ? <div className="empty-state">No orders received yet.</div> : (
                   <table className="table">
                     <thead><tr><th>Order ID</th><th>Total</th><th>Status</th><th>Customer Address</th></tr></thead>
@@ -327,13 +423,37 @@ const Dashboard = ({ user, onLogout, onProductChange }) => {
                 <table className="table" style={{ marginTop: '20px' }}>
                   <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>
                   <tbody>
-                    {sellerProducts.map(p => (
-                      <tr key={p.id}>
-                        <td><img src={resolveImageUrl(p.imageUrl)} alt="" style={{ width: '40px', height: '40px', borderRadius: '4px' }} /></td>
-                        <td>{p.name}</td><td>₹{p.price}</td><td>{p.stockQuantity}</td>
-                        <td><button className="btn btn-outline" onClick={() => startEditProduct(p)}>Edit</button></td>
-                      </tr>
-                    ))}
+                    {sellerProducts.map(p => {
+                      const edit = editForms[p.id];
+                      if (edit) {
+                        return (
+                          <tr key={p.id}>
+                            <td colSpan="5">
+                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '10px', backgroundColor: 'var(--bg-color)', borderRadius: '4px' }}>
+                                <input className="auth-input" name="name" value={edit.name} onChange={(e) => handleEditFormChange(p.id, e)} placeholder="Name" />
+                                <input className="auth-input" name="price" type="number" value={edit.price} onChange={(e) => handleEditFormChange(p.id, e)} placeholder="Price" />
+                                <input className="auth-input" name="stockQuantity" type="number" value={edit.stockQuantity} onChange={(e) => handleEditFormChange(p.id, e)} placeholder="Stock" />
+                                <select className="auth-input" name="category" value={edit.category} onChange={(e) => handleEditFormChange(p.id, e)}>
+                                  {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                </select>
+                                <input className="auth-input" type="file" onChange={(e) => setEditImageFiles(prev => ({...prev, [p.id]: e.target.files?.[0]}))} />
+                                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                                  <button className="btn btn-primary" onClick={() => handleSaveProductEdit(p.id)} disabled={isSavingProduct}>Save</button>
+                                  <button className="btn btn-outline" onClick={() => cancelEditProduct(p.id)}>Cancel</button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return (
+                        <tr key={p.id}>
+                          <td><img src={resolveImageUrl(p.imageUrl)} alt="" style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} /></td>
+                          <td>{p.name}</td><td>₹{p.price}</td><td>{p.stockQuantity}</td>
+                          <td><button className="btn btn-outline" onClick={() => startEditProduct(p)}>Edit</button></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

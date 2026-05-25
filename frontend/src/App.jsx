@@ -17,6 +17,9 @@ import Signup from './pages/Signup';
 import ProductDetails from './pages/ProductDetails';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import HelpCenter from './pages/HelpCenter';
+import ReturnRefund from './pages/ReturnRefund';
+
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -124,6 +127,8 @@ function App() {
             />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact user={user} />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/return-refund" element={<ReturnRefund />} />
             <Route
               path="/login"
               element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={setUser} />}

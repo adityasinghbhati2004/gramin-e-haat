@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,5 +88,46 @@ public class OrderController {
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<List<Order>> getSellerOrders(@PathVariable Long sellerId) {
         return ResponseEntity.ok(orderRepository.findBySellerIdOrderByOrderDateDesc(sellerId));
+    }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Order order = orderOpt.get();
+        order.setStatus(status);
+        orderRepository.save(order);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/seller/{sellerId}/report")
+    public ResponseEntity<byte[]> generateSellerReport(@PathVariable Long sellerId) {
+        List<Order> orders = orderRepository.findBySellerIdOrderByOrderDateDesc(sellerId);
+        StringBuilder csv = new StringBuilder();
+        csv.append("Order ID,Customer ID,Product ID,Product Name,Quantity Ordered,Unit Price,Total Price,Product Remaining\n");
+
+        for (Order order : orders) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getProduct() != null && sellerId.equals(item.getProduct().getSellerId())) {
+                    csv.append(order.getId()).append(",")
+                       .append(order.getUserId()).append(",")
+                       .append(item.getProduct().getId()).append(",")
+                       .append("\"").append(item.getProduct().getName().replace("\"", "\"\"")).append("\",")
+                       .append(item.getQuantity()).append(",")
+                       .append(item.getUnitPrice()).append(",")
+                       .append(item.getQuantity() * item.getUnitPrice()).append(",")
+                       .append(item.getProduct().getStockQuantity() == null ? 0 : item.getProduct().getStockQuantity()).append("\n");
+                }
+            }
+        }
+
+        byte[] csvBytes = csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=seller_report.csv");
+        headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
+
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
     }
 }

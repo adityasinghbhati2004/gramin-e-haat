@@ -29,10 +29,10 @@ const Footer = () => {
           <div>
             <h3 className="footer-title">Customer Service</h3>
             <ul className="footer-links">
-              <li><Link to="/dashboard">My Account</Link></li>
-              <li><Link to="/dashboard">Track Order</Link></li>
-              <li><Link to="/dashboard">Returns & Refunds</Link></li>
-              <li><Link to="/dashboard">Help Center</Link></li>
+              <li><Link to="/dashboard?tab=account">My Account</Link></li>
+              <li><Link to="/dashboard?tab=orders">Track Order</Link></li>
+              <li><Link to="/return-refund">Returns & Refunds</Link></li>
+              <li><Link to="/help">Help Center</Link></li>
             </ul>
           </div>
 
