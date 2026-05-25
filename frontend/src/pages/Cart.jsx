@@ -172,20 +172,46 @@ const Cart = ({ cart, onUpdateQuantity, onRemove, products, onAddToCart, user, o
               <span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span>
             </div>
             
-            <div className="summary-row" style={{ marginTop: '20px' }}>
-              <select
-                className="btn btn-outline"
-                style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-color)' }}
+            <div style={{ marginTop: '20px', width: '100%' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', display: 'block', marginBottom: '5px', color: 'var(--text-light)' }}>
+                Shipping Address
+              </label>
+              <textarea
+                className="auth-input"
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  borderRadius: '6px', 
+                  border: '1px solid var(--border-color)', 
+                  resize: 'vertical',
+                  minHeight: '60px',
+                  fontFamily: 'inherit',
+                  fontSize: '0.9rem',
+                  backgroundColor: 'var(--bg-color)'
+                }}
                 value={selectedAddress}
                 onChange={(e) => setSelectedAddress(e.target.value)}
-              >
-                <option value="">Select Address</option>
-                {user && user.address && (
-                  <option value={user.address}>Registered Address: {user.address}</option>
-                )}
-                <option value="Home: 123 Main St, New Delhi">Home: 123 Main St, New Delhi</option>
-                <option value="Work: Tech Park, Bangalore">Work: Tech Park, Bangalore</option>
-              </select>
+                placeholder="Enter your delivery address"
+                required
+              />
+              {user && user.address && selectedAddress !== user.address && (
+                <button 
+                  type="button"
+                  onClick={() => setSelectedAddress(user.address)}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'var(--primary-color)', 
+                    fontSize: '0.8rem', 
+                    cursor: 'pointer',
+                    marginTop: '4px',
+                    padding: 0,
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Use Registered Address
+                </button>
+              )}
             </div>
 
             <div className="summary-row">
